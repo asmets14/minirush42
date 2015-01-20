@@ -32,6 +32,8 @@ typedef struct s_tout
 	t_coord *bal;
 	t_coord *j1;
 	t_coord *j2;
+	t_coord	*vecteur;
+	t_coord	*dir;
 }				t_tout;
 
 static int	kbhit(void)
@@ -112,6 +114,8 @@ t_tout *init_bar_bal()
 	tout->bal = (t_coord *)malloc(sizeof(t_coord));
 	tout->j1 = (t_coord *)malloc(sizeof(t_coord));
 	tout->j2 = (t_coord *)malloc(sizeof(t_coord));
+	tout->vecteur = (t_coord *)malloc(sizeof(t_coord));
+	tout->dir = (t_coord *)malloc(sizeof(t_coord));
 
 	tout->bal->x= 28;
 	tout->bal->y= 2;
@@ -149,6 +153,7 @@ char **init(t_tout *tout)
 		j++;
 
 	}
+
 	affectation_bal(tout,tab);
 	affect_bar2(tout, tab);
 	affect_bar1(tout, tab);
@@ -186,7 +191,44 @@ void mouv_down(t_coord *bar, char **tab)
 	tab[bar->y + 3][bar->x] = '|';
 	tab[bar->y][bar->x] = ' ';
 	bar->y = bar->y + 1;
+	}
 }
+
+void dir(t_tout *tout)
+{
+	int r;
+    unsigned int seed;
+    seed = time(NULL);
+    r = rand_r(&seed) % 2;
+
+    if(r == 0)
+    	tout->dir->x= -1;
+    else
+    	tout->dir->x = 1;
+	seed = time(NULL);
+    r = rand_r(&seed) % 2;
+	if(r == 0)
+    	tout->dir->y= -1;
+    else
+    	tout->dir->y = 1;
+}
+
+void verif_bal(t_tout *tout, char **tab)
+{
+	printf("x = %d, y = %d", tout->bal->x, tout->bal->y );
+	printf("x = %d, y = %d", tout->dir->x, tout->dir->y );
+	if(tab[(tout->bal->y) + (tout->dir->y)][(tout->bal->x) + (tout->dir->x)] == '|')
+		tout->dir->x *= -1;
+	if((tout->bal->x + tout->dir->x == 0) || ((tout->bal->x + tout->dir->x) == 19))
+		tout->dir->y *= -1;
+}
+
+void mouv_bal(t_tout *tout, char **tab)
+{
+	tab[tout->bal->y][tout->bal->x] = ' ';
+	tab[tout->bal->y][tout->bal->x] = tab[(tout->bal->y) + (tout->dir->y)][(tout->bal->x) + (tout->dir->x)];
+	tab[tout->bal->y][tout->bal->x] = 'o';
+	
 }
 
 int			main(void)
@@ -197,7 +239,7 @@ int			main(void)
 	tout = init_bar_bal();
 	tab = init(tout);
 
-
+	dir(tout);
 	while (1)
 	{
 		key = getarrowkey();
@@ -217,8 +259,11 @@ int			main(void)
 			//write(1, "S\n", 2);
 			mouv_down(tout->j1, tab);
 		}
+		verif_bal(tout, tab);
+		mouv_bal(tout, tab);
 		system("CLEAR");
 		print(tab);
 		usleep(100000);
 	}
+	return (0);
 }
