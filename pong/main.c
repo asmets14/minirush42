@@ -6,7 +6,7 @@
 /*   By: juschaef <juschaef@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/12/08 14:00:56 by hhismans          #+#    #+#             */
-/*   Updated: 2015/01/20 11:01:32 by asmets           ###   ########.fr       */
+/*   Updated: 2015/01/21 18:39:53 by asmets           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,57 @@ static int	getarrowkey(void)
 	return (0);
 }
 
+void	remplace(int x, int y, char **tab, t_tout *tout)
+{
+	tout->bal->x = x;
+	tout->bal->y = y;
+}
+
+int ft_abs(int c)
+{
+	if (c < 0)
+		return (-c);
+	return (c);
+}
+
+void        put_line_h(int x1, int y1, int x2, int y2, char **tab, t_tout *tout)
+{
+	int        x;
+
+	x = x1;
+	while (x <= x2)
+	{
+		remplace(x, y1 + ((y2 - y1) * (x - x1)) / (x2 - x1), tab, tout);
+		x++;
+	}
+}
+
+void        put_line_v(int x1, int y1, int x2, int y2, char **tab, t_tout *tout)
+{
+	int        y;
+
+	y = y1;
+	while (y <= y2)
+	{
+		remplace(x1 + ((x2 - x1) * (y - y1)) / (y2 - y1), y, tab, tout);
+		y++;
+	}
+}
+
+void        draw_line(int x1, int y1, int x2 , int y2 , char **tab, t_tout *tout)// depart - arriver
+{
+
+	//if ((x1 - x2) == 0 && (y1 - y2) == 0)
+	//	mlx_pixel_put(e->mlx, e->win, x1, y1, 0x00FF00);
+	if (x1 <= x2 && ((x2 - x1) >= ft_abs(y2 - y1)))
+		put_line_h(x1, y1, x2, y2, tab, tout);
+	else if (x2 <= x1 && ((x1 - x2) >= ft_abs(y1 - y2)))
+		put_line_h(x2, y2, x1, y1, tab, tout);
+	else if (y1 <= y2 && ((y2 - y1) >= ft_abs(x2 - x1)))
+		put_line_v(x1, y1, x2, y2, tab, tout);
+	else if (y2 <= y1 && ((y1 - y2) >= ft_abs(x1 - x2)))
+		put_line_v(x2, y2, x1, y1, tab, tout);
+}
 void affect_bar1(t_tout *tout, char **tab)
 {
 	tab[tout->j1->y][tout->j1->x] = '|';
@@ -106,6 +157,16 @@ void affectation_bal(t_tout *tout, char **tab)
 	tab[tout->bal->y][tout->bal->x] = 'o';
 }
 
+void start(t_tout *tout)
+{
+	tout->bal->x= 28;
+	tout->bal->y= 2;
+	tout->j1->x = 3;
+	tout->j1->y = 8;
+	tout->j2->x = 56;
+	tout->j2->y = 8;
+}
+
 t_tout *init_bar_bal()
 {
 	t_tout *tout;
@@ -117,13 +178,9 @@ t_tout *init_bar_bal()
 	tout->vecteur = (t_coord *)malloc(sizeof(t_coord));
 	tout->dir = (t_coord *)malloc(sizeof(t_coord));
 
-	tout->bal->x= 28;
-	tout->bal->y= 2;
-	tout->j1->x = 3;
-	tout->j1->y = 8;
-	tout->j2->x = 56;
-	tout->j2->y = 8;
-	// VALEUR A AJOUTER;
+	start(tout);
+	tout->j1->value = 0;
+	tout->j2->value = 0;
 	return (tout);
 }
 
@@ -168,8 +225,10 @@ void print(char** tab)
 	i = 0;
 	j = 0;
 	while (j < 20)
-	{
+	{	
+		ft_putstr("\033[34m");
 		ft_putendl(tab[j]);
+		ft_putstr("\033[0m");
 		j++;
 	}
 }
@@ -178,9 +237,9 @@ void mouv_up(t_coord *bar, char **tab)
 {
 	if (bar->y > 1)
 	{	
-	tab[bar->y - 1][bar->x] = '|';
-	tab[bar->y + 2][bar->x] = ' ';
-	bar->y = bar->y - 1;
+		tab[bar->y - 1][bar->x] = '|';
+		tab[bar->y + 2][bar->x] = ' ';
+		bar->y = bar->y - 1;
 	}
 }
 
@@ -188,47 +247,58 @@ void mouv_down(t_coord *bar, char **tab)
 {
 	if(bar->y < 16)
 	{
-	tab[bar->y + 3][bar->x] = '|';
-	tab[bar->y][bar->x] = ' ';
-	bar->y = bar->y + 1;
+		tab[bar->y + 3][bar->x] = '|';
+		tab[bar->y][bar->x] = ' ';
+		bar->y = bar->y + 1;
 	}
 }
 
 void dir(t_tout *tout)
 {
 	int r;
-    unsigned int seed;
-    seed = time(NULL);
-    r = rand_r(&seed) % 2;
-
-    if(r == 0)
-    	tout->dir->x= -1;
-    else
-    	tout->dir->x = 1;
+	unsigned int seed;
 	seed = time(NULL);
-    r = rand_r(&seed) % 2;
+	r = rand_r(&seed) % 2;
+
 	if(r == 0)
-    	tout->dir->y= -1;
-    else
-    	tout->dir->y = 1;
+		tout->dir->x= -1;
+	else
+		tout->dir->x = 1;
+	seed = time(NULL);
+	r = rand_r(&seed) % 2;
+	if(r == 0)
+		tout->dir->y= -1;
+	else
+		tout->dir->y = 1;
 }
 
-void verif_bal(t_tout *tout, char **tab)
+int	verif_bal(t_tout *tout, char **tab)
 {
-	printf("x = %d, y = %d", tout->bal->x, tout->bal->y );
-	printf("x = %d, y = %d", tout->dir->x, tout->dir->y );
 	if(tab[(tout->bal->y) + (tout->dir->y)][(tout->bal->x) + (tout->dir->x)] == '|')
 		tout->dir->x *= -1;
-	if((tout->bal->x + tout->dir->x == 0) || ((tout->bal->x + tout->dir->x) == 19))
+	if((tout->bal->y + tout->dir->y == 0) || ((tout->bal->y + tout->dir->y) == 19))
 		tout->dir->y *= -1;
+	if ((tout->bal->x + tout->dir->x == 0) )
+	{
+		tout->j2->value += 1;
+		return (1);
+	}
+	if ((tout->bal->x + tout->dir->x) == 59)
+	{
+		tout->j1->value += 1;
+		return (1);
+	}
+	return (0);
 }
 
 void mouv_bal(t_tout *tout, char **tab)
 {
 	tab[tout->bal->y][tout->bal->x] = ' ';
-	tab[tout->bal->y][tout->bal->x] = tab[(tout->bal->y) + (tout->dir->y)][(tout->bal->x) + (tout->dir->x)];
+	draw_line(tout->bal->x, tout->bal->y, ((tout->bal)->x + 1), ((tout->bal)->y + 2), tab, tout);
+	tout->bal->y += tout->dir->y;
+	tout->bal->x += tout->dir->x;
 	tab[tout->bal->y][tout->bal->x] = 'o';
-	
+
 }
 
 int			main(void)
@@ -239,6 +309,7 @@ int			main(void)
 	tout = init_bar_bal();
 	tab = init(tout);
 
+	int time;
 	dir(tout);
 	while (1)
 	{
@@ -250,7 +321,7 @@ int			main(void)
 		}
 		else if (key == 2) // j2
 			mouv_up(tout->j2, tab);
-			//write(1, "fleche haut\n", 12);
+		//write(1, "fleche haut\n", 12);
 		else if (key == 3) // j2
 			mouv_down(tout->j2, tab);
 		//	write(1, "fleche bas\n", 11);
@@ -259,11 +330,22 @@ int			main(void)
 			//write(1, "S\n", 2);
 			mouv_down(tout->j1, tab);
 		}
-		verif_bal(tout, tab);
-		mouv_bal(tout, tab);
-		system("CLEAR");
+		if(verif_bal(tout, tab) == 1)
+		{
+			start(tout);
+			tab = init(tout);
+
+		}
+		if (time % 5 == 0)
+		{
+
+			mouv_bal(tout, tab);
+		}
+			system("CLEAR");
 		print(tab);
+		printf("joueur 1 = %d \t joueur 2 = %d\n", tout->j1->value, tout->j2->value);
 		usleep(100000);
+		time++;
 	}
 	return (0);
 }
