@@ -6,7 +6,7 @@
 /*   By: juschaef <juschaef@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/12/08 14:00:56 by hhismans          #+#    #+#             */
-/*   Updated: 2015/01/21 18:39:53 by asmets           ###   ########.fr       */
+/*   Updated: 2015/01/22 14:34:13 by asmets           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,57 +84,83 @@ static int	getarrowkey(void)
 	return (0);
 }
 
-void	remplace(int x, int y, char **tab, t_tout *tout)
-{
-	tout->bal->x = x;
-	tout->bal->y = y;
-}
+/*void	remplace(int x, int y, char **tab, t_tout *tout)
+  {
+  tout->bal->x = x;
+  tout->bal->y = y;
+  }
 
-int ft_abs(int c)
-{
-	if (c < 0)
-		return (-c);
-	return (c);
-}
+  int ft_abs(int c)
+  {
+  if (c < 0)
+  return (-c);
+  return (c);
+  }
 
-void        put_line_h(int x1, int y1, int x2, int y2, char **tab, t_tout *tout)
-{
-	int        x;
+  void        put_line_h(int x1, int y1, int x2, int y2, char **tab, t_tout *tout)
+  {
+  int        x;
 
-	x = x1;
-	while (x <= x2)
-	{
-		remplace(x, y1 + ((y2 - y1) * (x - x1)) / (x2 - x1), tab, tout);
-		x++;
+  x = x1;
+  while (x <= x2)
+  {
+  remplace(x, y1 + ((y2 - y1) * (x - x1)) / (x2 - x1), tab, tout);
+  x++;
+  }
+  }
+
+  void        put_line_v(int x1, int y1, int x2, int y2, char **tab, t_tout *tout)
+  {
+  int        y;
+
+  y = y1;
+  while (y <= y2)
+  {
+  remplace(x1 + ((x2 - x1) * (y - y1)) / (y2 - y1), y, tab, tout);
+  y++;
+  }
+  }
+
+  void        draw_line(int x1, int y1, int x2 , int y2 , char **tab, t_tout *tout)// depart - arriver
+  {
+
+//if ((x1 - x2) == 0 && (y1 - y2) == 0)
+//	mlx_pixel_put(e->mlx, e->win, x1, y1, 0x00FF00);
+if (x1 <= x2 && (tout->bal->x, tout->bal->y(x2 - x1) >= ft_abs(y2 - y1)))
+put_line_h(x1, y1, x2, y2, tab, tout);
+else if (x2 <= x1 && ((x1 - x2) >= ft_abs(y1 - y2)))
+put_line_h(x2, y2, x1, y1, tab, tout);
+else if (y1 <= y2 && ((y2 - y1) >= ft_abs(x2 - x1)))
+put_line_v(x1, y1, x2, y2, tab, tout);
+else if (y2 <= y1 && ((y1 - y2) >= ft_abs(x1 - x2)))
+put_line_v(x2, y2, x1, y1, tab, tout);
+}*/
+
+void line(int x0, int y0, int x1, int y1)
+{
+
+	int dx;
+	int dy;
+	int sx;
+	int sy;
+	int err;
+
+	if(tout->bal->dir != new->dir )
+	dx = abs(x1-x0);
+   	sx = x0<x1 ? 1 : -1;
+	dy = abs(y1-y0);
+   	sy = y0<y1 ? 1 : -1; 
+	err = (dx>dy ? dx : -dy)/2, e2;
+
+	for(;;){
+		setPixel(x0,y0);
+		if (x0==x1 && y0==y1) break;
+		e2 = err;
+		if (e2 >-dx) { err -= dy; x0 += sx; }
+		if (e2 < dy) { err += dx; y0 += sy; }
 	}
 }
 
-void        put_line_v(int x1, int y1, int x2, int y2, char **tab, t_tout *tout)
-{
-	int        y;
-
-	y = y1;
-	while (y <= y2)
-	{
-		remplace(x1 + ((x2 - x1) * (y - y1)) / (y2 - y1), y, tab, tout);
-		y++;
-	}
-}
-
-void        draw_line(int x1, int y1, int x2 , int y2 , char **tab, t_tout *tout)// depart - arriver
-{
-
-	//if ((x1 - x2) == 0 && (y1 - y2) == 0)
-	//	mlx_pixel_put(e->mlx, e->win, x1, y1, 0x00FF00);
-	if (x1 <= x2 && ((x2 - x1) >= ft_abs(y2 - y1)))
-		put_line_h(x1, y1, x2, y2, tab, tout);
-	else if (x2 <= x1 && ((x1 - x2) >= ft_abs(y1 - y2)))
-		put_line_h(x2, y2, x1, y1, tab, tout);
-	else if (y1 <= y2 && ((y2 - y1) >= ft_abs(x2 - x1)))
-		put_line_v(x1, y1, x2, y2, tab, tout);
-	else if (y2 <= y1 && ((y1 - y2) >= ft_abs(x1 - x2)))
-		put_line_v(x2, y2, x1, y1, tab, tout);
-}
 void affect_bar1(t_tout *tout, char **tab)
 {
 	tab[tout->j1->y][tout->j1->x] = '|';
@@ -295,8 +321,8 @@ void mouv_bal(t_tout *tout, char **tab)
 {
 	tab[tout->bal->y][tout->bal->x] = ' ';
 	draw_line(tout->bal->x, tout->bal->y, ((tout->bal)->x + 1), ((tout->bal)->y + 2), tab, tout);
-	tout->bal->y += tout->dir->y;
-	tout->bal->x += tout->dir->x;
+	//	tout->bal->y += tout->dir->y;
+	//	tout->bal->x += touttout->bal->x, tout->bal->y->dir->x;
 	tab[tout->bal->y][tout->bal->x] = 'o';
 
 }
@@ -341,9 +367,10 @@ int			main(void)
 
 			mouv_bal(tout, tab);
 		}
-			system("CLEAR");
+		system("CLEAR");
 		print(tab);
 		printf("joueur 1 = %d \t joueur 2 = %d\n", tout->j1->value, tout->j2->value);
+		printf("y : %d / x : %d\n",tout->bal->y, tout->bal->x);
 		usleep(100000);
 		time++;
 	}
